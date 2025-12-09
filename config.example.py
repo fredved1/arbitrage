@@ -26,7 +26,7 @@ CHECK_FUNDING_RATE = True
 
 # ======== RISK MANAGEMENT ========
 # Maximum position size in USD
-MAX_POSITION_USD = 10.0
+MAX_POSITION_USD = 12.0
 
 # Enable dry-run mode (no real trades)
 DRY_RUN = False
