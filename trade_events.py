@@ -110,10 +110,12 @@ class TradeEventManager:
     
     def get_events(self, limit: int = 50) -> List[Dict]:
         """Get recent events."""
+        self._load()  # Refresh from file
         return self._events[-limit:]
     
     def get_stats(self) -> Dict:
         """Get current stats."""
+        self._load()  # Refresh from file
         return {
             "trades_executed": self._trades_executed,
             "total_pnl": self._total_pnl,

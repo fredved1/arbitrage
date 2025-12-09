@@ -153,10 +153,31 @@ class DashboardServer:
             # Update state
             if perp_position and float(perp_position.get('szi', 0)) != 0:
                 self.state.has_position = True
-                self.state.position_size = abs(float(perp_position.get('szi', 0)))
-                self.state.entry_perp_price = float(perp_position.get('entryPx', 0))
-                self.state.entry_spot_price = prices.spot.best_ask  # Approximate
-                self.state.unrealized_pnl = float(perp_position.get('unrealizedPnl', 0))
+                size = abs(float(perp_position.get('szi', 0)))
+                self.state.position_size = size
+                
+                # Get true entry details from trade events
+                te_stats = trade_events.get_stats()
+                current_pos = te_stats.get("current_position")
+                
+                if current_pos:
+                    self.state.entry_spot_price = current_pos.get("entry_spot", 0)
+                    self.state.entry_perp_price = current_pos.get("entry_perp", 0)
+                    self.state.entry_time = current_pos.get("entry_time", "")
+                else:
+                    # Fallback if no trade event found (should not happen in normal flow)
+                    self.state.entry_perp_price = float(perp_position.get('entryPx', 0))
+                    # Fallback spot entry: assume spread was around threshold at entry
+                    self.state.entry_spot_price = self.state.entry_perp_price / (1 + config.MIN_SPREAD_THRESHOLD)
+
+                # Calculate TOTAL PnL (Spot + Perp)
+                # Spot PnL = (Current Bid - Entry) * Size
+                # Perp PnL = API reported unrealized PnL
+                
+                spot_pnl = (prices.spot.best_bid - self.state.entry_spot_price) * size
+                perp_pnl = float(perp_position.get('unrealizedPnl', 0))
+                
+                self.state.unrealized_pnl = spot_pnl + perp_pnl
             else:
                 self.state.has_position = False
                 self.state.position_size = 0
