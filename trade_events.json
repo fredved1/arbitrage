@@ -1,0 +1,25 @@
+{
+  "events": [
+    {
+      "timestamp": "2025-12-09T13:39:22.915063",
+      "event_type": "entry",
+      "message": "\ud83d\udfe2 ENTRY: 0.36 HYPE @ Spot $28.03, Perp $28.21",
+      "details": {
+        "size": 0.36,
+        "spot_price": 28.033,
+        "perp_price": 28.206,
+        "spread": 0.0062
+      }
+    }
+  ],
+  "trades_executed": 0,
+  "total_pnl": 0.0,
+  "current_position": {
+    "size": 0.36,
+    "entry_spot": 28.033,
+    "entry_perp": 28.206,
+    "entry_spread": 0.0062,
+    "entry_time": "2025-12-09T13:39:22.915051"
+  },
+  "last_update": "2025-12-09T13:39:22.915066"
+}

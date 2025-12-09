@@ -1,0 +1,48 @@
+INFO:__main__:Bot initialized - Data Collection Mode
+INFO:__main__:Wallet: 0x668D96ce5a56BD90B77130D2B50A653686838844
+INFO:__main__:DRY_RUN: False
+INFO:__main__:Threshold: 0.15%
+INFO:__main__:🚀 Starting Arbitrage Bot - DATA COLLECTION MODE
+INFO:websocket_manager:Testing WebSocket connection...
+INFO:websocket_manager:✅ Connection test successful! Received: subscriptionResponse
+INFO:websocket_manager:Connecting to WebSocket: wss://api.hyperliquid.xyz/ws
+INFO:websocket_manager:✅ WebSocket connected and subscribed to L2 books
+INFO:__main__:Spread: +0.0818% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.1102% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0960% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0604% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0853% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0640% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0604% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0675% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0675% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0782% | Opportunities: 0 | Trades: 0
+INFO:__main__:📊 Status: 1075 checks, 0 opportunities, 0 trades
+INFO:__main__:Spread: +0.0604% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0782% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0817% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0675% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0496% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0922% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0745% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0567% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0852% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0888% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0960% | Opportunities: 0 | Trades: 0
+INFO:__main__:📊 Status: 2175 checks, 0 opportunities, 0 trades
+INFO:__main__:Spread: +0.0746% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0640% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0640% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0711% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0675% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0639% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0568% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0709% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0532% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0674% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0780% | Opportunities: 0 | Trades: 0
+INFO:__main__:📊 Status: 3265 checks, 0 opportunities, 0 trades
+INFO:__main__:Spread: +0.0709% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0638% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0673% | Opportunities: 0 | Trades: 0
+INFO:__main__:Spread: +0.0673% | Opportunities: 0 | Trades: 0

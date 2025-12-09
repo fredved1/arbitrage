@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+
+# Config with secrets
+config.py
+
+# System Logs (keep data logs though)
+*.log
+!bot_output.log

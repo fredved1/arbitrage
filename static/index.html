@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐋 Perfect Whale - Arbitrage Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🐋</span>
+                <h1>Perfect Whale</h1>
+                <span class="subtitle">Delta Neutral Arbitrage</span>
+            </div>
+            <div class="status-badges">
+                <span class="badge" id="ws-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connecting...</span>
+                </span>
+                <span class="badge" id="mode-badge">
+                    <span class="mode-text">DRY RUN</span>
+                </span>
+            </div>
+        </header>
+
+        <!-- Main Grid -->
+        <main class="dashboard-grid">
+            <!-- Prices Card -->
+            <section class="card prices-card">
+                <h2 class="card-title">
+                    <span class="icon">📊</span>
+                    Live Prices
+                </h2>
+                <div class="prices-grid">
+                    <div class="price-box spot">
+                        <span class="price-label">HYPE Spot (@107)</span>
+                        <div class="price-values">
+                            <div class="price-row">
+                                <span class="label">Bid</span>
+                                <span class="value" id="spot-bid">--</span>
+                            </div>
+                            <div class="price-row">
+                                <span class="label">Ask</span>
+                                <span class="value" id="spot-ask">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="price-box perp">
+                        <span class="price-label">HYPE Perpetual</span>
+                        <div class="price-values">
+                            <div class="price-row">
+                                <span class="label">Bid</span>
+                                <span class="value" id="perp-bid">--</span>
+                            </div>
+                            <div class="price-row">
+                                <span class="label">Ask</span>
+                                <span class="value" id="perp-ask">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Spread Card -->
+            <section class="card spread-card">
+                <h2 class="card-title">
+                    <span class="icon">📈</span>
+                    Spread Monitor
+                </h2>
+                <div class="spread-display">
+                    <div class="spread-main">
+                        <span class="spread-value" id="spread-value">0.00%</span>
+                        <span class="spread-status" id="spread-status">NO SIGNAL</span>
+                    </div>
+                    <div class="spread-bar-container">
+                        <div class="spread-bar" id="spread-bar"></div>
+                        <div class="threshold-marker" id="threshold-marker" style="left: 15%;">
+                            <span class="threshold-label">0.15%</span>
+                        </div>
+                    </div>
+                    <div class="spread-details">
+                        <div class="detail">
+                            <span class="label">Entry Threshold</span>
+                            <span class="value" id="entry-threshold">0.15%</span>
+                        </div>
+                        <div class="detail">
+                            <span class="label">Exit Threshold</span>
+                            <span class="value" id="exit-threshold">0.03%</span>
+                        </div>
+                        <div class="detail">
+                            <span class="label">Funding Rate (8h)</span>
+                            <span class="value" id="funding-rate">--</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Position Card -->
+            <section class="card position-card">
+                <h2 class="card-title">
+                    <span class="icon">💼</span>
+                    Position
+                </h2>
+                <div class="position-content" id="position-content">
+                    <div class="no-position" id="no-position">
+                        <span class="icon">⏳</span>
+                        <span>Waiting for opportunity...</span>
+                    </div>
+                    <div class="active-position hidden" id="active-position">
+                        <div class="position-header">
+                            <span class="position-status">🟢 ACTIVE</span>
+                            <span class="position-time" id="position-time">--</span>
+                        </div>
+                        <div class="position-details">
+                            <div class="position-leg">
+                                <span class="leg-label">📈 Spot Long</span>
+                                <span class="leg-value" id="pos-spot-size">0 HYPE</span>
+                                <span class="leg-price">@ $<span id="pos-spot-entry">0.00</span></span>
+                            </div>
+                            <div class="position-leg">
+                                <span class="leg-label">📉 Perp Short</span>
+                                <span class="leg-value" id="pos-perp-size">0 HYPE</span>
+                                <span class="leg-price">@ $<span id="pos-perp-entry">0.00</span></span>
+                            </div>
+                        </div>
+                        <div class="pnl-display">
+                            <span class="pnl-label">Unrealized P&L</span>
+                            <span class="pnl-value" id="unrealized-pnl">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats Card -->
+            <section class="card stats-card">
+                <h2 class="card-title">
+                    <span class="icon">📊</span>
+                    Statistics
+                </h2>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-value" id="stat-opportunities">0</span>
+                        <span class="stat-label">Opportunities</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-value" id="stat-trades">0</span>
+                        <span class="stat-label">Trades</span>
+                    </div>
+                    <div class="stat-box highlight">
+                        <span class="stat-value" id="stat-pnl">$0.00</span>
+                        <span class="stat-label">Total P&L</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Spread Chart -->
+            <section class="card chart-card">
+                <h2 class="card-title">
+                    <span class="icon">📉</span>
+                    Spread History
+                </h2>
+                <div class="chart-container">
+                    <canvas id="spread-chart"></canvas>
+                </div>
+            </section>
+
+            <!-- Trade Log -->
+            <section class="card log-card">
+                <h2 class="card-title">
+                    <span class="icon">📜</span>
+                    Activity Log
+                </h2>
+                <div class="log-container" id="log-container">
+                    <div class="log-entry info">
+                        <span class="log-time">--:--:--</span>
+                        <span class="log-message">Waiting for connection...</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analytics/Data Tab -->
+            <section class="card analytics-card" style="grid-column: 1 / -1;">
+                <h2 class="card-title">
+                    <span class="icon">📊</span>
+                    Analytics Data (Copy for Analysis)
+                    <button class="copy-btn" id="copy-data-btn" onclick="copyAnalyticsData()">📋 Copy All Data</button>
+                </h2>
+                <div class="analytics-content">
+                    <div class="analytics-grid">
+                        <!-- Session Stats -->
+                        <div class="analytics-box">
+                            <h3>📅 Session Info</h3>
+                            <div class="analytics-row">
+                                <span>Start Time:</span>
+                                <span id="session-start">--</span>
+                            </div>
+                            <div class="analytics-row">
+                                <span>Duration:</span>
+                                <span id="session-duration">--</span>
+                            </div>
+                            <div class="analytics-row">
+                                <span>Price Updates:</span>
+                                <span id="price-updates">0</span>
+                            </div>
+                        </div>
+
+                        <!-- Spread Stats -->
+                        <div class="analytics-box">
+                            <h3>📈 Spread Statistics</h3>
+                            <div class="analytics-row">
+                                <span>Current Spread:</span>
+                                <span id="current-spread">0.00%</span>
+                            </div>
+                            <div class="analytics-row">
+                                <span>Min Spread:</span>
+                                <span id="min-spread">0.00%</span>
+                            </div>
+                            <div class="analytics-row">
+                                <span>Max Spread:</span>
+                                <span id="max-spread">0.00%</span>
+                            </div>
+                            <div class="analytics-row">
+                                <span>Avg Spread:</span>
+                                <span id="avg-spread">0.00%</span>
+                            </div>
+                        </div>
+
+                        <!-- Opportunity Stats -->
+                        <div class="analytics-box">
+                            <h3>🎯 Opportunities</h3>
+                            <div class="analytics-row">
+                                <span>Total Opportunities:</span>
+                                <span id="total-opportunities">0</span>
+                            </div>
+                            <div class="analytics-row">
+                                <span>Spreads > 0.10%:</span>
+                                <span id="spreads-10">0</span>
+                            </div>
+                            <div class="analytics-row">
+                                <span>Spreads > 0.15%:</span>
+                                <span id="spreads-15">0</span>
+                            </div>
+                            <div class="analytics-row">
+                                <span>Spreads > 0.20%:</span>
+                                <span id="spreads-20">0</span>
+                            </div>
+                        </div>
+
+                        <!-- Trade Stats -->
+                        <div class="analytics-box">
+                            <h3>💰 Trades & P&L</h3>
+                            <div class="analytics-row">
+                                <span>Trades Executed:</span>
+                                <span id="trades-executed">0</span>
+                            </div>
+                            <div class="analytics-row">
+                                <span>Gross P&L:</span>
+                                <span id="gross-pnl">$0.00</span>
+                            </div>
+                            <div class="analytics-row">
+                                <span>Total Fees:</span>
+                                <span id="total-fees">$0.00</span>
+                            </div>
+                            <div class="analytics-row">
+                                <span>Net P&L:</span>
+                                <span id="net-pnl-stat">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Raw Data for Copy -->
+                    <div class="raw-data-section">
+                        <h3>📋 Raw Data (JSON)</h3>
+                        <textarea id="raw-data-output" readonly rows="10"
+                            style="width: 100%; font-family: 'JetBrains Mono', monospace; font-size: 11px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; color: #9ca3af; resize: vertical;"></textarea>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-info">
+                <span>Last update: <span id="last-update">--</span></span>
+                <span>•</span>
+                <span>Max Position: $<span id="max-position">100</span></span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+
+</html>
