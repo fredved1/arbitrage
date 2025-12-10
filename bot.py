@@ -83,7 +83,7 @@ class TradeRecord:
 
 @dataclass
 class DataCollector:
-    """Collects and saves all data for analysis."""
+    """Collects and saves all data for analysis. Persists across restarts."""
     spread_history: List[SpreadDataPoint] = field(default_factory=list)
     trades: List[TradeRecord] = field(default_factory=list)
     opportunities_found: int = 0
@@ -91,19 +91,56 @@ class DataCollector:
     
     # Statistics
     start_time: str = ""
+    first_start_time: str = ""  # Original start time (preserved across restarts)
     total_spread_checks: int = 0
     spreads_above_threshold: int = 0
     
+    def load(self):
+        """Load existing data from log files on startup."""
+        # Load spread log
+        if config.SAVE_SPREAD_LOG and os.path.exists(config.SPREAD_LOG_FILE):
+            try:
+                with open(config.SPREAD_LOG_FILE, 'r') as f:
+                    data = json.load(f)
+                    self.first_start_time = data.get("first_start_time", data.get("start_time", ""))
+                    self.total_spread_checks = data.get("total_checks", 0)
+                    self.spreads_above_threshold = data.get("above_threshold", 0)
+                    # Load spread history (convert dicts back to dataclass)
+                    for item in data.get("data", []):
+                        self.spread_history.append(SpreadDataPoint(**item))
+                    logger.info(f"📂 Loaded {len(self.spread_history)} spread records, {self.total_spread_checks} total checks")
+            except Exception as e:
+                logger.warning(f"Could not load spread log: {e}")
+        
+        # Load trade log
+        if config.SAVE_TRADE_LOG and os.path.exists(config.TRADE_LOG_FILE):
+            try:
+                with open(config.TRADE_LOG_FILE, 'r') as f:
+                    data = json.load(f)
+                    self.opportunities_found = data.get("opportunities", 0)
+                    self.opportunities_missed = data.get("opportunities_missed", 0)
+                    # Load trades (convert dicts back to dataclass)
+                    for item in data.get("trades", []):
+                        self.trades.append(TradeRecord(**item))
+                    logger.info(f"📂 Loaded {len(self.trades)} trade records, {self.opportunities_found} opportunities")
+            except Exception as e:
+                logger.warning(f"Could not load trade log: {e}")
+        
+        # Set first_start_time if this is truly first run
+        if not self.first_start_time:
+            self.first_start_time = datetime.now().isoformat()
+    
     def save(self):
-        """Save all data to JSON files."""
+        """Save all data to JSON files (preserves historical data)."""
         # Save spread log
         if config.SAVE_SPREAD_LOG:
             spread_data = {
-                "start_time": self.start_time,
+                "first_start_time": self.first_start_time,
+                "last_update": datetime.now().isoformat(),
                 "total_checks": self.total_spread_checks,
                 "above_threshold": self.spreads_above_threshold,
                 "threshold": config.MIN_SPREAD_THRESHOLD,
-                "data": [asdict(s) for s in self.spread_history[-1000:]]  # Last 1000
+                "data": [asdict(s) for s in self.spread_history[-5000:]]  # Keep last 5000 (more history)
             }
             with open(config.SPREAD_LOG_FILE, 'w') as f:
                 json.dump(spread_data, f, indent=2)
@@ -111,9 +148,11 @@ class DataCollector:
         # Save trade log
         if config.SAVE_TRADE_LOG:
             trade_data = {
-                "start_time": self.start_time,
+                "first_start_time": self.first_start_time,
+                "last_update": datetime.now().isoformat(),
                 "total_trades": len(self.trades),
                 "opportunities": self.opportunities_found,
+                "opportunities_missed": self.opportunities_missed,
                 "trades": [asdict(t) for t in self.trades]
             }
             with open(config.TRADE_LOG_FILE, 'w') as f:
@@ -130,8 +169,9 @@ class ArbitrageBotDataCollection:
         self.current_trade: Optional[TradeRecord] = None
         self.trade_counter = 0
         
-        # Data collection
+        # Data collection - load existing data first
         self.data = DataCollector()
+        self.data.load()  # Load previous session data
         self.data.start_time = datetime.now().isoformat()
         
         # Position tracking
