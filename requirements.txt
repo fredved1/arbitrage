@@ -1,6 +1,5 @@
-hyperliquid-python-sdk>=0.10.0
-websockets>=12.0
-python-dotenv>=1.0.0
-eth-account>=0.10.0
+hyperliquid-python-sdk>=0.7.0
 aiohttp>=3.9.0
 aiohttp-cors>=0.7.0
+eth-account>=0.10.0
+requests>=2.31.0
