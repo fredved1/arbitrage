@@ -174,19 +174,35 @@ class ArbitrageBotDataCollection:
         self.data.load()  # Load previous session data
         self.data.start_time = datetime.now().isoformat()
         
-        # Position tracking
         self.position_size = 0.0
         self.entry_spot_price = 0.0
         self.entry_perp_price = 0.0
         
-        # SDK setup
+        # SDK setup with retry for 429s
         self.account = Account.from_key(config.PRIVATE_KEY)
-        self.info = Info(constants.MAINNET_API_URL, skip_ws=True)
-        self.exchange = Exchange(
-            self.account, 
-            constants.MAINNET_API_URL,
-            account_address=config.ACCOUNT_ADDRESS
-        )
+        
+        max_retries = 10
+        for i in range(max_retries):
+            try:
+                self.info = Info(constants.MAINNET_API_URL, skip_ws=True)
+                self.exchange = Exchange(
+                    self.account, 
+                    constants.MAINNET_API_URL,
+                    account_address=config.ACCOUNT_ADDRESS
+                )
+                break
+            except Exception as e:
+                logger.warning(f"⚠️ Init failed (attempt {i+1}/{max_retries}): {e}")
+                if "429" in str(e):
+                    wait_time = 10 + (i * 5) # 10s, 15s, 20s...
+                    logger.warning(f"⏳ 429 Rate Limit - Cooling down for {wait_time}s...")
+                    time.sleep(wait_time)
+                else:
+                    time.sleep(5)
+                
+                if i == max_retries - 1:
+                    logger.error("❌ CRITICAL: Could not initialize SDK after retries")
+                    raise e
         
         self.ws_manager: Optional[WebSocketManager] = None
         self._last_funding_check = 0
