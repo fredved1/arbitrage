@@ -192,7 +192,7 @@ class ArbitrageBotDataCollection:
         self._last_funding_check = 0
         self._cached_funding = 0.0
         self._last_failed_entry = 0  # Cooldown after failed entry
-        self._failed_entry_cooldown = 60  # Seconds to wait after failed entry
+        self._failed_entry_cooldown = 5  # Reduced from 60s to 5s to catch more opportunities
         
         logger.info(f"Bot initialized - Data Collection Mode")
         logger.info(f"Wallet: {config.ACCOUNT_ADDRESS}")
@@ -257,12 +257,13 @@ class ArbitrageBotDataCollection:
             
             # Cooldown check after failed entry
             if time.time() - self._last_failed_entry < self._failed_entry_cooldown:
-                logger.info(f"⏳ Cooldown active ({int(self._failed_entry_cooldown - (time.time() - self._last_failed_entry))}s remaining)")
+                # logger.info(f"⏳ Cooldown active ({int(self._failed_entry_cooldown - (time.time() - self._last_failed_entry))}s remaining)")
                 return
             
             # Check funding
             if config.CHECK_FUNDING_RATE and funding < 0:
-                logger.info(f"⏭️ Skip: Negative funding {funding*100:.4f}%")
+                if self.data.total_spread_checks % 100 == 0: # Reduce log spam
+                    logger.info(f"⏭️ Skip: Negative funding {funding*100:.4f}%")
                 self.data.opportunities_missed += 1
                 return
             
@@ -274,26 +275,6 @@ class ArbitrageBotDataCollection:
             if exit_spread < config.EXIT_THRESHOLD:
                 logger.info(f"📉 EXIT SIGNAL: Spread {exit_spread*100:.4f}%")
                 await self.execute_exit(prices)
-    
-    async def _unwind_partial_entry(self, spot_ok: bool, perp_ok: bool, size: float, spot_px: float, perp_px: float):
-        """Immediately unwind partial fills to prevent naked positions."""
-        logger.warning(f"🔄 UNWINDING Partial Fill - Spot: {spot_ok}, Perp: {perp_ok}")
-        trade_events.error(f"Partial Fill Unwind Triggered - Spot: {spot_ok}, Perp: {perp_ok}")
-        
-        try:
-            if spot_ok:
-                # Sell Spot immediately
-                logger.info(f"🔙 Reversing Spot Buy: Selling {size}...")
-                await self._place_order(config.SPOT_SYMBOL, False, size, spot_px * 0.95) # 5% slip
-            
-            if perp_ok:
-                # Close Perp immediately
-                logger.info(f"🔙 Reversing Perp Short: Closing {size}...")
-                await self._place_order(config.PERP_SYMBOL, True, size, perp_px * 1.05, reduce_only=True) # 5% slip
-                
-        except Exception as e:
-            logger.error(f"CRITICAL: Unwind failed: {e}")
-            trade_events.error(f"CRITICAL: Unwind failed: {e}")
 
     async def execute_entry(self, prices: PriceState) -> bool:
         """Execute entry trade with sequential orders (spot first, then perp)."""
@@ -328,12 +309,12 @@ class ArbitrageBotDataCollection:
             required_perp_margin = size * perp_bid * 0.25  # 25% margin buffer for safety
             
             if spot_usdc < required_spot:
-                logger.warning(f"⚠️ Insufficient SPOT balance: ${spot_usdc:.2f} < ${required_spot:.2f}")
+                # logger.warning(f"⚠️ Insufficient SPOT balance: ${spot_usdc:.2f} < ${required_spot:.2f}")
                 self._last_failed_entry = time.time()
                 return False
             
             if perp_margin < required_perp_margin:
-                logger.warning(f"⚠️ Insufficient PERP margin: ${perp_margin:.2f} < ${required_perp_margin:.2f}")
+                # logger.warning(f"⚠️ Insufficient PERP margin: ${perp_margin:.2f} < ${required_perp_margin:.2f}")
                 self._last_failed_entry = time.time()
                 return False
                 
@@ -365,8 +346,8 @@ class ArbitrageBotDataCollection:
         
         try:
             # SEQUENTIAL EXECUTION: Spot first
-            # Use small slippage buffer to ensure IOC fills
-            spot_limit = round(spot_ask * 1.001, 5)  # 0.1% above ask for buy
+            # Use 0.5% slippage buffer to ensure IOC fills
+            spot_limit = round(spot_ask * 1.005, 5)  # 0.5% above ask
             logger.info(f"📦 Step 1/2: Placing Spot order @ ${spot_limit:.4f}...")
             spot_result = await self._place_order(config.SPOT_SYMBOL, True, size, spot_limit)
             spot_ok = self._check_fill(spot_result, "Spot Buy")
@@ -383,26 +364,37 @@ class ArbitrageBotDataCollection:
                 await self._sync_state()
                 return False
             
-            # Spot succeeded, now do perp
-            # Use slippage buffer for short (lower price to ensure fill)
-            perp_limit = round(perp_bid * 0.999, 5)  # 0.1% below bid for sell
-            logger.info(f"📊 Step 2/2: Placing Perp order @ ${perp_limit:.4f}...")
-            perp_result = await self._place_order(config.PERP_SYMBOL, False, size, perp_limit)
-            perp_ok = self._check_fill(perp_result, "Perp Short")
+            # Spot succeeded, now do perp with RETRY logic
+            perp_ok = False
+            for attempt in range(3):
+                # Increasing slippage with each attempt
+                slippage = 0.005 + (attempt * 0.005) # 0.5%, 1.0%, 1.5%
+                perp_limit = round(perp_bid * (1 - slippage), 5) 
+                
+                logger.info(f"📊 Step 2/2 (Attempt {attempt+1}/3): Placing Perp order @ ${perp_limit:.4f}...")
+                perp_result = await self._place_order(config.PERP_SYMBOL, False, size, perp_limit)
+                perp_ok = self._check_fill(perp_result, "Perp Short")
+                
+                if perp_ok:
+                    break
+                
+                logger.warning(f"⚠️ Perp attempt {attempt+1} failed, retrying...")
+                await asyncio.sleep(0.5) # Short wait before retry
             
             if not perp_ok:
-                logger.warning("❌ Perp order failed - REVERSING spot immediately")
+                logger.warning("❌ ALL Perp attempts failed - REVERSING spot immediately")
                 # Must reverse spot
                 logger.info(f"🔙 Selling {size} Spot to reverse...")
+                # Aggressive sell to ensure exit
                 await self._place_order(config.SPOT_SYMBOL, False, size, spot_ask * 0.95)
                 
                 self.current_trade.status = "error"
-                self.current_trade.error_message = "Perp failed after spot success"
+                self.current_trade.error_message = "Perp failed after 3 attempts"
                 self.data.trades.append(self.current_trade)
                 self._last_failed_entry = time.time()
                 self.position_state = PositionState.FLAT
                 
-                trade_events.error(f"Perp failed - Reversed spot {size} HYPE")
+                trade_events.error(f"Perp failed (3 attempts) - Reversed spot {size} HYPE")
                 
                 # Mandatory sync
                 await self._sync_state()
