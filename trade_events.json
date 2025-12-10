@@ -65,10 +65,184 @@
         "perp_price": 28.66,
         "net_pnl": 0.02956390499999859
       }
+    },
+    {
+      "timestamp": "2025-12-09T20:50:23.755708",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: True",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-09T20:56:26.957683",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: True, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-09T21:33:33.216108",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-09T21:50:53.690608",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T04:00:51.184913",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T04:04:25.595452",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T04:28:06.429692",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T04:28:07.844088",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T04:45:11.871724",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T04:51:23.537552",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T04:51:52.949265",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T04:53:24.987209",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T04:53:43.216542",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T04:54:23.846545",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T04:54:26.337777",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T04:54:29.543895",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T04:54:31.155948",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: True",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T04:54:40.863107",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T04:56:51.895422",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: True",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T05:03:07.569814",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T05:04:14.229598",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T05:05:39.457081",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T06:52:25.248735",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T06:57:04.144364",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T06:57:32.627955",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T06:58:52.583915",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T07:09:28.353255",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T08:38:47.648814",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
+    },
+    {
+      "timestamp": "2025-12-10T09:18:17.980548",
+      "event_type": "error",
+      "message": "\u26a0\ufe0f ERROR: Partial Fill Unwind Triggered - Spot: False, Perp: False",
+      "details": {}
     }
   ],
   "trades_executed": 3,
   "total_pnl": 0.04409541999999961,
   "current_position": null,
-  "last_update": "2025-12-09T18:30:04.183718"
+  "last_update": "2025-12-10T09:18:17.980620"
 }

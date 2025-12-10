@@ -151,6 +151,8 @@ class ArbitrageBotDataCollection:
         self.ws_manager: Optional[WebSocketManager] = None
         self._last_funding_check = 0
         self._cached_funding = 0.0
+        self._last_failed_entry = 0  # Cooldown after failed entry
+        self._failed_entry_cooldown = 60  # Seconds to wait after failed entry
         
         logger.info(f"Bot initialized - Data Collection Mode")
         logger.info(f"Wallet: {config.ACCOUNT_ADDRESS}")
@@ -213,6 +215,11 @@ class ArbitrageBotDataCollection:
         if self.position_state == PositionState.FLAT and is_opportunity:
             self.data.opportunities_found += 1
             
+            # Cooldown check after failed entry
+            if time.time() - self._last_failed_entry < self._failed_entry_cooldown:
+                logger.info(f"⏳ Cooldown active ({int(self._failed_entry_cooldown - (time.time() - self._last_failed_entry))}s remaining)")
+                return
+            
             # Check funding
             if config.CHECK_FUNDING_RATE and funding < 0:
                 logger.info(f"⏭️ Skip: Negative funding {funding*100:.4f}%")
@@ -249,22 +256,32 @@ class ArbitrageBotDataCollection:
             trade_events.error(f"CRITICAL: Unwind failed: {e}")
 
     async def execute_entry(self, prices: PriceState) -> bool:
-        """Execute entry trade."""
+        """Execute entry trade with sequential orders (spot first, then perp)."""
+        import requests
+        
         spot_ask = prices.spot.best_ask
         perp_bid = prices.perp.best_bid
         
         # Calculate size
         size = round(config.MAX_POSITION_USD / spot_ask, 2)
+        required_usd = size * spot_ask * 1.1  # 10% buffer for fees
         
         # Pre-flight Balance Check
         try:
-             # Basic check using last known state or quick fetch?
-             # For speed, usually we track balance, but safer to fetch if low freq
-             # But fetching adds latency.
-             # Let's assume user has funds if we are running, but we can check if we just synced?
-             pass 
-        except:
-             pass
+            resp = requests.post('https://api.hyperliquid.xyz/info',
+                json={'type': 'spotClearinghouseState', 'user': config.ACCOUNT_ADDRESS},
+                timeout=5)
+            spot_state = resp.json()
+            usdc_balance = sum(float(b.get('total', 0)) for b in spot_state.get('balances', []) if b.get('coin') == 'USDC')
+            
+            if usdc_balance < required_usd:
+                logger.warning(f"⚠️ Insufficient balance: ${usdc_balance:.2f} < ${required_usd:.2f}")
+                self._last_failed_entry = time.time()  # Trigger cooldown
+                return False
+        except Exception as e:
+            logger.error(f"Balance check failed: {e}")
+            self._last_failed_entry = time.time()
+            return False
 
         logger.info(f"🟢 ENTRY: Buy {size} Spot @ ${spot_ask:.4f}, Short Perp @ ${perp_bid:.4f}")
         
@@ -286,47 +303,71 @@ class ArbitrageBotDataCollection:
         )
         
         try:
-            # Execute both orders
-            spot_result, perp_result = await asyncio.gather(
-                self._place_order(config.SPOT_SYMBOL, True, size, spot_ask),
-                self._place_order(config.PERP_SYMBOL, False, size, perp_bid),
-                return_exceptions=True
-            )
-            
+            # SEQUENTIAL EXECUTION: Spot first
+            logger.info("📦 Step 1/2: Placing Spot order...")
+            spot_result = await self._place_order(config.SPOT_SYMBOL, True, size, spot_ask)
             spot_ok = self._check_fill(spot_result, "Spot Buy")
+            
+            if not spot_ok:
+                logger.warning("❌ Spot order failed - aborting entry (no perp order placed)")
+                self.current_trade.status = "error"
+                self.current_trade.error_message = "Spot failed"
+                self.data.trades.append(self.current_trade)
+                self._last_failed_entry = time.time()
+                self.position_state = PositionState.FLAT
+                
+                # Sync state to be safe
+                await self._sync_state()
+                return False
+            
+            # Spot succeeded, now do perp
+            logger.info("📊 Step 2/2: Placing Perp order...")
+            perp_result = await self._place_order(config.PERP_SYMBOL, False, size, perp_bid)
             perp_ok = self._check_fill(perp_result, "Perp Short")
             
-            if spot_ok and perp_ok:
-                self.position_state = PositionState.OPEN
-                self.position_size = size
-                self.entry_spot_price = spot_ask
-                self.entry_perp_price = perp_bid
+            if not perp_ok:
+                logger.warning("❌ Perp order failed - REVERSING spot immediately")
+                # Must reverse spot
+                logger.info(f"🔙 Selling {size} Spot to reverse...")
+                await self._place_order(config.SPOT_SYMBOL, False, size, spot_ask * 0.95)
                 
-                # Estimate fees
-                self.current_trade.fees = (spot_ask * size + perp_bid * size) * 0.00025
-                
-                # Log trade event
-                trade_events.entry_executed(size, spot_ask, perp_bid, prices.get_entry_spread())
-                
-                logger.info(f"✅ ENTRY COMPLETE - Size: {size} HYPE")
-                return True
-            else:
                 self.current_trade.status = "error"
-                self.current_trade.error_message = "Partial fill"
+                self.current_trade.error_message = "Perp failed after spot success"
                 self.data.trades.append(self.current_trade)
-                
-                # CRITICAL FIX: Unwind partial position
-                await self._unwind_partial_entry(spot_ok, perp_ok, size, spot_ask, perp_bid)
-                
+                self._last_failed_entry = time.time()
                 self.position_state = PositionState.FLAT
+                
+                trade_events.error(f"Perp failed - Reversed spot {size} HYPE")
+                
+                # Mandatory sync
+                await self._sync_state()
                 return False
+            
+            # Both succeeded!
+            self.position_state = PositionState.OPEN
+            self.position_size = size
+            self.entry_spot_price = spot_ask
+            self.entry_perp_price = perp_bid
+            
+            # Estimate fees
+            self.current_trade.fees = (spot_ask * size + perp_bid * size) * 0.00025
+            
+            # Log trade event
+            trade_events.entry_executed(size, spot_ask, perp_bid, prices.get_entry_spread())
+            
+            logger.info(f"✅ ENTRY COMPLETE - Size: {size} HYPE")
+            return True
                 
         except Exception as e:
             logger.error(f"Entry error: {e}")
             self.current_trade.status = "error"
             self.current_trade.error_message = str(e)
             self.data.trades.append(self.current_trade)
+            self._last_failed_entry = time.time()
             self.position_state = PositionState.FLAT
+            
+            # Mandatory sync after error
+            await self._sync_state()
             return False
     
     async def execute_exit(self, prices: PriceState) -> bool:
